@@ -20,7 +20,12 @@ export default async function handler(req, res) {
         'Content-Type': 'application/x-www-form-urlencoded',
         'Authorization': `DeepL-Auth-Key ${deeplApiKey}`
       },
-      body: new URLSearchParams({ text, target_lang })
+      body: new URLSearchParams({
+        text,
+        target_lang,
+        source_lang: 'DE' // <- manuell setzen!
+      })
+
     });
 
     const data = await response.json();
