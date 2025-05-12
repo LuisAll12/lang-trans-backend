@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Only POST allowed' });
 
-  const { text, target_lang } = req.body;
+  const { text, target_lang, source_lang  } = req.body;
   const deeplApiKey = process.env.DEEPL_API_KEY;
 
   if (!text || !target_lang) {
@@ -23,7 +23,7 @@ export default async function handler(req, res) {
       body: new URLSearchParams({
         text,
         target_lang,
-        source_lang: 'DE' // <- manuell setzen!
+        source_lang: source_lang || 'DE' // <- manuell setzen!
       })
 
     });
