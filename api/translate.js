@@ -1,23 +1,16 @@
 export default async function handler(req, res) {
-  // CORS-Header setzen (sehr wichtig!)
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  // Preflight-Request korrekt beantworten
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Only POST allowed' });
-  }
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Only POST allowed' });
 
   const { text, target_lang } = req.body;
   const deeplApiKey = process.env.DEEPL_API_KEY;
 
   if (!text || !target_lang) {
-    return res.status(400).json({ error: 'Missing text or target_lang' });
+    return res.status(400).json({ error: 'Missing parameters', received: req.body });
   }
 
   try {
@@ -27,15 +20,17 @@ export default async function handler(req, res) {
         'Content-Type': 'application/x-www-form-urlencoded',
         'Authorization': `DeepL-Auth-Key ${deeplApiKey}`
       },
-      body: new URLSearchParams({
-        text,
-        target_lang
-      })
+      body: new URLSearchParams({ text, target_lang })
     });
 
     const data = await response.json();
-    res.status(200).json({ translatedText: data?.translations?.[0]?.text || text });
-  } catch (e) {
-    res.status(500).json({ error: 'Translation failed', detail: e.message });
+    console.log('DeepL Response:', data);
+
+    return res.status(200).json({
+      translatedText: data?.translations?.[0]?.text || '[Fehler: keine Übersetzung]'
+    });
+
+  } catch (err) {
+    return res.status(500).json({ error: 'Translation failed', detail: err.message });
   }
 }
